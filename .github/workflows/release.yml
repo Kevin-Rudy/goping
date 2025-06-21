@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # 当推送版本标签时触发
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23'
+        
+    - name: Get dependencies
+      run: go mod download
+      
+    - name: Build binaries
+      run: |
+        # Windows
+        GOOS=windows GOARCH=amd64 go build -ldflags "-s -w" -o goping-windows-amd64.exe ./cmd/goping
+        GOOS=windows GOARCH=386 go build -ldflags "-s -w" -o goping-windows-386.exe ./cmd/goping
+        
+        # Linux
+        GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o goping-linux-amd64 ./cmd/goping
+        GOOS=linux GOARCH=arm64 go build -ldflags "-s -w" -o goping-linux-arm64 ./cmd/goping
+        
+        # macOS
+        GOOS=darwin GOARCH=amd64 go build -ldflags "-s -w" -o goping-darwin-amd64 ./cmd/goping
+        GOOS=darwin GOARCH=arm64 go build -ldflags "-s -w" -o goping-darwin-arm64 ./cmd/goping
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          goping-windows-amd64.exe
+          goping-windows-386.exe
+          goping-linux-amd64
+          goping-linux-arm64
+          goping-darwin-amd64
+          goping-darwin-arm64
+        body: |
+          ## 🚀 GoPing ${{ github.ref_name }}
+          
+          ### 📦 下载说明
+          - **Windows用户**: 下载 `goping-windows-amd64.exe` (64位) 或 `goping-windows-386.exe` (32位)
+          - **Linux用户**: 下载 `goping-linux-amd64` (x64) 或 `goping-linux-arm64` (ARM64)
+          - **macOS用户**: 下载 `goping-darwin-amd64` (Intel) 或 `goping-darwin-arm64` (Apple Silicon)
+          
+          ### 🛠️ 使用方法
+          ```bash
+          # Windows
+          .\goping-windows-amd64.exe google.com
+          
+          # Linux/macOS (需要添加执行权限)
+          chmod +x goping-linux-amd64
+          ./goping-linux-amd64 google.com
+          ```
+          
+          ### ✨ 主要特性
+          - 基于时间戳的精确数据对齐
+          - Braille字符高精度图表显示
+          - 智能权限适配（自动选择最佳实现方式）
+          - 支持多目标同时监控
+          
+          ---
+          完整使用说明请查看 [README.md](https://github.com/Kevin-Rudy/goping/blob/main/README.md)
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
