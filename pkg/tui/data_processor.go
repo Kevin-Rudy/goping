@@ -207,9 +207,9 @@ func (t *TUI) updateWelfordAccumulator(stats *core.Stats, newValue float64) {
 func (t *TUI) updateSummary(stats *core.Stats) {
 	summary := make(map[string]string)
 
-	// 基本统计
-	summary["发送"] = fmt.Sprintf("%d", stats.PacketsSent)
-	summary["接收"] = fmt.Sprintf("%d", stats.PacketsRecv)
+	// 超时次数
+	timeouts := stats.PacketsSent - stats.PacketsRecv
+	summary["t/o"] = fmt.Sprintf("%d", timeouts)
 
 	// 丢包率
 	var lossRate float64
@@ -218,23 +218,18 @@ func (t *TUI) updateSummary(stats *core.Stats) {
 	}
 	summary["丢包率"] = fmt.Sprintf("%.1f%%", lossRate)
 
+	// 发送/接收合并显示
+	summary["发送/接收"] = fmt.Sprintf("%d/%d", stats.PacketsSent, stats.PacketsRecv)
+
 	// 延迟统计
 	if stats.PacketsRecv > 0 {
-		summary["平均"] = formatLatency(stats.WelfordMean)
-		summary["最小"] = formatLatency(stats.MinLatency)
-		summary["最大"] = formatLatency(stats.MaxLatency)
-
-		// 标准差
-		if stats.WelfordCount > 1 {
-			variance := stats.WelfordM2 / float64(stats.WelfordCount-1)
-			stddev := math.Sqrt(variance)
-			summary["标准差"] = formatLatency(stddev)
-		}
+		summary["平均延迟"] = formatLatency(stats.WelfordMean)
+		summary["最小延迟"] = formatLatency(stats.MinLatency)
+		summary["最大延迟"] = formatLatency(stats.MaxLatency)
 	} else {
-		summary["平均"] = "N/A"
-		summary["最小"] = "N/A"
-		summary["最大"] = "N/A"
-		summary["标准差"] = "N/A"
+		summary["平均延迟"] = "N/A"
+		summary["最小延迟"] = "N/A"
+		summary["最大延迟"] = "N/A"
 	}
 
 	stats.Summary = summary

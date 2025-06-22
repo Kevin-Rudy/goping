@@ -48,6 +48,13 @@ jobs:
         body: |
           ## 🚀 GoPing ${{ github.ref_name }}
           
+          ### 🆕 本次更新 (v0.1.1)
+          - **优化统计表格显示**: 重新设计统计信息布局，提升用户体验
+          - **新增超时计数器**: 直观显示网络超时次数
+          - **合并发送/接收列**: 节省界面空间，格式更紧凑（如：233/207）
+          - **调整统计项顺序**: 按使用频率重新排序（超时→丢包率→发送/接收→延迟统计）
+          - **移除标准差显示**: 简化界面，突出核心指标
+          
           ### 📦 下载说明
           - **Windows用户**: 下载 `goping-windows-amd64.exe` (64位) 或 `goping-windows-386.exe` (32位)
           - **Linux用户**: 下载 `goping-linux-amd64` (x64) 或 `goping-linux-arm64` (ARM64)
@@ -68,6 +75,7 @@ jobs:
           - Braille字符高精度图表显示
           - 智能权限适配（自动选择最佳实现方式）
           - 支持多目标同时监控
+          - 优化的统计信息展示
           
           ---
           完整使用说明请查看 [README.md](https://github.com/Kevin-Rudy/goping/blob/main/README.md)

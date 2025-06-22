@@ -3,7 +3,6 @@ package tui
 
 import (
 	"fmt"
-	"sort"
 
 	"github.com/Kevin-Rudy/goping/pkg/core"
 	"github.com/gdamore/tcell/v2"
@@ -80,12 +79,14 @@ func (t *TUI) rebuildUI() {
 		}
 	}
 
-	// 将收集到的keys转换为排序后的切片
-	summaryKeys := make([]string, 0, len(summaryKeysSet))
-	for key := range summaryKeysSet {
-		summaryKeys = append(summaryKeys, key)
+	// 按预定义顺序排列统计项
+	predefinedOrder := []string{"t/o", "丢包率", "发送/接收", "平均延迟", "最小延迟", "最大延迟"}
+	var summaryKeys []string
+	for _, key := range predefinedOrder {
+		if summaryKeysSet[key] {
+			summaryKeys = append(summaryKeys, key)
+		}
 	}
-	sort.Strings(summaryKeys)
 
 	// 构建完整的表头：目标 + 所有Summary keys
 	headers := []string{"目标"}
