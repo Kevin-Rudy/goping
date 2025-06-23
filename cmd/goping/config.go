@@ -43,9 +43,6 @@ func buildConfigFromCLI(c *cli.Context) *AppConfig {
 	if c.IsSet("chart-height") {
 		tuiConfig.MinChartHeight = c.Int("chart-height")
 	}
-	if c.IsSet("ceiling") {
-		tuiConfig.DefaultCeiling = c.Float64("ceiling")
-	}
 	if c.IsSet("timeout-buffer-ratio") {
 		tuiConfig.TimeoutBufferRatio = c.Float64("timeout-buffer-ratio")
 	}

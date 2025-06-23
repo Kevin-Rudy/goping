@@ -62,32 +62,18 @@ func (t *TUI) insertDataPointByTime(stats *core.Stats, newPoint core.DataPoint) 
 		return
 	}
 
-	// 检查是否需要在最后插入（常见情况）
 	lastPoint := stats.History[len(stats.History)-1]
-	if newPoint.Timestamp.After(lastPoint.Timestamp) || newPoint.Timestamp.Equal(lastPoint.Timestamp) {
-		// 检查是否需要从超时状态插值到正常状态
-		if lastPoint.Status == core.PointTimeout && newPoint.Status == core.PointSuccess {
+
+	// 检查是否需要从超时状态插值到正常状态
+	if lastPoint.Status == core.PointTimeout {
+		switch newPoint.Status {
+		case core.PointSuccess:
 			t.interpolateFromTimeout(stats, lastPoint, newPoint)
-		}
-		stats.History = append(stats.History, newPoint)
-		return
-	}
-
-	// 需要在中间插入，使用二分查找找到插入位置
-	left, right := 0, len(stats.History)
-	for left < right {
-		mid := (left + right) / 2
-		if stats.History[mid].Timestamp.Before(newPoint.Timestamp) {
-			left = mid + 1
-		} else {
-			right = mid
+		case core.PointTimeout:
+			t.fillWithNaN(stats, lastPoint, newPoint)
 		}
 	}
-
-	// 在位置left插入新点
-	stats.History = append(stats.History, core.DataPoint{})
-	copy(stats.History[left+1:], stats.History[left:])
-	stats.History[left] = newPoint
+	stats.History = append(stats.History, newPoint)
 }
 
 // interpolateFromTimeout 从超时状态插值到正常状态
@@ -96,18 +82,18 @@ func (t *TUI) interpolateFromTimeout(stats *core.Stats, lastPoint, newPoint core
 	expectedInterval := t.tuiConfig.TimeGridInterval
 	steps := int(timeDiff / expectedInterval)
 
-	if steps > 1 && steps <= 10 { // 限制插值步数，避免过多插值
-		t.interpolateFromTimeoutToNormal(stats, lastPoint, newPoint, steps)
-	}
+	t.interpolateFromTimeoutToNormal(stats, lastPoint, newPoint, steps)
+	
 }
 
 // fillWithNaN 用NaN填充时间间隔
-func (t *TUI) fillWithNaN(stats *core.Stats, lastPoint, newPoint core.DataPoint, steps int) {
+func (t *TUI) fillWithNaN(stats *core.Stats, lastPoint, newPoint core.DataPoint) {
 	timeDiff := newPoint.Timestamp.Sub(lastPoint.Timestamp)
-	stepDuration := timeDiff / time.Duration(steps)
+	expectedInterval := t.tuiConfig.TimeGridInterval
+	steps := int(timeDiff / expectedInterval)
 
 	for i := 1; i < steps; i++ {
-		interpolatedTime := lastPoint.Timestamp.Add(time.Duration(i) * stepDuration)
+		interpolatedTime := lastPoint.Timestamp.Add(time.Duration(i) * expectedInterval)
 		interpolatedPoint := core.DataPoint{
 			Timestamp: interpolatedTime,
 			Value:     math.NaN(),
@@ -119,18 +105,14 @@ func (t *TUI) fillWithNaN(stats *core.Stats, lastPoint, newPoint core.DataPoint,
 
 // interpolateFromTimeoutToNormal 从超时状态插值到正常状态
 func (t *TUI) interpolateFromTimeoutToNormal(stats *core.Stats, lastPoint, newPoint core.DataPoint, steps int) {
-	timeDiff := newPoint.Timestamp.Sub(lastPoint.Timestamp)
-	stepDuration := timeDiff / time.Duration(steps)
+	stepDuration := t.tuiConfig.TimeGridInterval
+	ceilingValue := t.getCurrentCeilingValue(stats)
+	valueDiff := (ceilingValue - newPoint.Value) / float64(steps)
 
 	for i := 1; i < steps; i++ {
 		interpolatedTime := lastPoint.Timestamp.Add(time.Duration(i) * stepDuration)
 		// 从超时逐渐过渡到正常值
-		ratio := float64(i) / float64(steps)
-		interpolatedValue := math.NaN() // 前半段保持NaN
-		if ratio > 0.5 {
-			// 后半段开始插值到目标值
-			interpolatedValue = newPoint.Value * (ratio - 0.5) * 2
-		}
+		interpolatedValue := ceilingValue - float64(i)*valueDiff
 
 		interpolatedPoint := core.DataPoint{
 			Timestamp: interpolatedTime,
@@ -152,13 +134,7 @@ func (t *TUI) getCurrentCeilingValue(stats *core.Stats) float64 {
 			}
 		}
 	}
-
-	// 使用配置的默认天花板和动态计算的值中的较大者
-	dynamicCeiling := maxValue * 1.2 // 20%缓冲
-	if dynamicCeiling < t.tuiConfig.DefaultCeiling {
-		return t.tuiConfig.DefaultCeiling
-	}
-	return dynamicCeiling
+	return maxValue
 }
 
 // dequeueOutOfWindow 移除窗口外的数据点

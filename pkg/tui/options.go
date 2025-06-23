@@ -44,13 +44,6 @@ func WithHistorySize(size int) Option {
 	}
 }
 
-// WithDefaultCeiling 设置默认天花板值
-func WithDefaultCeiling(ceiling float64) Option {
-	return func(c *Config) {
-		c.DefaultCeiling = ceiling
-	}
-}
-
 // WithValueBufferRatio 设置值缓冲比例
 func WithValueBufferRatio(ratio float64) Option {
 	return func(c *Config) {

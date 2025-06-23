@@ -28,13 +28,22 @@ func formatLatency(latency float64) string {
 
 // getTargetColor 根据目标标识符获取对应的颜色（统一颜色分配逻辑）
 func (t *TUI) getTargetColor(identifier string) string {
-	// 扩展的颜色序列，提供更多颜色选择
+	// 重新设计的颜色序列，使用更兼容、更鲜明的颜色
 	colorSequence := []string{
-		// 原有的6种颜色
-		"[green]", "[yellow]", "[blue]", "[magenta]", "[cyan]", "[red]",
-		// 新增的颜色
-		"[orange]", "[purple]", "[lime]", "[pink]",
-		"[darkcyan]", "[darkgreen]", "[darkblue]", "[darkmagenta]",
+		"[green]",       // 绿色 - 通常显示良好
+		"[yellow]",      // 黄色 - 通常显示良好
+		"[blue]",        // 蓝色 - 通常显示良好
+		"[red]",         // 红色 - 通常显示良好
+		"[lightgreen]",  // 浅绿色
+		"[lightblue]",   // 浅蓝色
+		"[lightyellow]", // 浅黄色
+		"[lightred]",    // 浅红色
+		"[white]",       // 白色 - 在深色背景下醒目
+		"[gray]",        // 灰色
+		"[darkgreen]",   // 深绿色
+		"[darkblue]",    // 深蓝色
+		"[darkyellow]",  // 深黄色
+		"[darkred]",     // 深红色
 	}
 
 	// 基于预定义的targets顺序分配颜色，确保颜色稳定

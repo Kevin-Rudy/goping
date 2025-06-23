@@ -14,7 +14,6 @@ type Config struct {
 	MinChartWidth      int           // 最小图表宽度
 	MinChartHeight     int           // 最小图表高度
 	MaxHistorySize     int           // 历史缓冲区大小
-	DefaultCeiling     float64       // 默认天花板值
 	ValueBufferRatio   float64       // 值缓冲比例
 	MaxChartSize       int           // 最大图表尺寸（防止极端值）
 }
@@ -28,7 +27,6 @@ func DefaultConfig() *Config {
 		MinChartWidth:      20,                     // 最小图表宽度
 		MinChartHeight:     5,                      // 最小图表高度
 		MaxHistorySize:     150,                    // 默认150个历史点
-		DefaultCeiling:     100.0,                  // 默认100ms上限
 		ValueBufferRatio:   0.1,                    // 10%缓冲
 		MaxChartSize:       1000,                   // 最大图表尺寸
 	}
@@ -80,10 +78,6 @@ func (c *Config) Validate() error {
 
 	if c.MaxHistorySize > 1000 {
 		return errors.New("历史缓冲区大小不能超过1000")
-	}
-
-	if c.DefaultCeiling <= 0 {
-		return errors.New("默认天花板值必须大于0")
 	}
 
 	if c.ValueBufferRatio < 0 {

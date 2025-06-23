@@ -235,7 +235,6 @@ func TestHistoryBuffering(t *testing.T) {
 		MinChartWidth:      20,
 		MinChartHeight:     5,
 		MaxHistorySize:     5, // maxHistorySize=5, 时间窗口=5*200ms=1秒
-		DefaultCeiling:     100.0,
 		ValueBufferRatio:   0.1,
 		MaxChartSize:       1000,
 	}

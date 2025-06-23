@@ -76,11 +76,6 @@ func createCliFlags() []cli.Flag {
 			Value: 5,
 			Usage: "最小图表高度",
 		},
-		&cli.Float64Flag{
-			Name:  "ceiling",
-			Value: 100.0,
-			Usage: "图表默认上限值 (ms)",
-		},
 		&cli.DurationFlag{
 			Name:  "timeout-threshold",
 			Value: 0, // 0表示自动计算
